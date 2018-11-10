@@ -1,4 +1,4 @@
-// headfile for qn4 program
+// headfile for TCP program
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -19,17 +19,13 @@
 #define DATALEN 500
 #define BUFSIZE 60000
 #define PACKLEN 508
-#define MAXSIZE 30008
-#define MAXLEN 30000
-#define MAXINT 0x7fffffff
-#define N 1
 #define HEADLEN 8
 
 struct pack_so			//data packet structure
 {
 uint32_t num;				// the sequence number
 uint32_t len;					// the packet length
-char data[MAXLEN];	//the packet data
+char data[DATALEN];	//the packet data
 };
 
 struct ack_so
