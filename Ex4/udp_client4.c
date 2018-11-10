@@ -42,14 +42,14 @@ int main(int argc, char **argv)
 	}
 
 	addrs = (struct in_addr **)sh->h_addr_list;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);                           //create the socket
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);                           //create the socket
 	if (sockfd <0)
 	{
 		printf("error in socket");
 		exit(1);
 	}
 	ser_addr.sin_family = AF_INET;
-	ser_addr.sin_port = htons(MYTCP_PORT);
+	ser_addr.sin_port = htons(MYUDP_PORT);
 	memcpy(&(ser_addr.sin_addr.s_addr), *addrs, sizeof(struct in_addr));
 	bzero(&(ser_addr.sin_zero), 8);
 	ret = connect(sockfd, (struct sockaddr *)&ser_addr, sizeof(struct sockaddr));         //connect the socket with the host

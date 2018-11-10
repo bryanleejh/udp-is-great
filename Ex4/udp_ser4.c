@@ -19,7 +19,7 @@ int main(void)
 //	char *buf;
 	pid_t pid;
 
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);          //create socket
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);          //create socket
 	if (sockfd <0)
 	{
 		printf("error in socket!");
@@ -27,19 +27,13 @@ int main(void)
 	}
 
 	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(MYTCP_PORT);
+	my_addr.sin_port = htons(MYUDP_PORT);
 	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);//inet_addr("172.0.0.1");
 	bzero(&(my_addr.sin_zero), 8);
 	ret = bind(sockfd, (struct sockaddr *) &my_addr, sizeof(struct sockaddr));                //bind socket
 	if (ret <0)
 	{
 		printf("error in binding");
-		exit(1);
-	}
-
-	ret = listen(sockfd, BACKLOG);                              //listen
-	if (ret <0) {
-		printf("error in listening");
 		exit(1);
 	}
 
