@@ -7,7 +7,7 @@ tcp_ser.c: the source file of the server in tcp transmission
 
 #define BACKLOG 10
 
-void str_ser(int sockfd);                                                        // transmitting and receiving function
+void str_ser(int sockfd, struct sockaddr *addr, int addrlen);                                                        // transmitting and receiving function
 
 int main(void)
 {
@@ -39,19 +39,13 @@ int main(void)
 
 	while (1)
 	{
-		printf("waiting for data\n");
+		// printf("waiting for data\n");
 		sin_size = sizeof (struct sockaddr_in);
-		con_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);            //accept the packet
-		if (con_fd <0)
-		{
-			printf("error in accept\n");
-			exit(1);
-		}
 
 		if ((pid = fork())==0)                                         // creat acception process
 		{
 			close(sockfd);
-			str_ser(con_fd);                                          //receive packet and response
+			str_ser(con_fd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr_in));                                          //receive packet and response
 			close(con_fd);
 			exit(0);
 		}
@@ -61,21 +55,23 @@ int main(void)
 	exit(0);
 }
 
-void str_ser(int sockfd)
+void str_ser(int sockfd, struct sockaddr *addr, int addrlen)
 {
 	char buf[BUFSIZE];
 	FILE *fp;
 	char recvs[DATALEN];
 	struct ack_so ack;
-	int end, n = 0;
+	int end, n = 0, len;
 	long lseek=0;
 	end = 0;
+
+	len = sizeof (struct sockaddr_in);
 
 	printf("receiving data!\n");
 
 	while(!end)
 	{
-		if ((n= recv(sockfd, &recvs, DATALEN, 0))==-1)                                   //receive the packet
+		if ((n= recvfrom(sockfd, &recvs, DATALEN, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
 			printf("error when receiving\n");
 			exit(1);
@@ -90,12 +86,12 @@ void str_ser(int sockfd)
 	}
 	ack.num = 1;
 	ack.len = 0;
-	if ((n = send(sockfd, &ack, 2, 0))==-1)
+	if ((n = sendto(sockfd, &ack, 2, 0, addr, addrlen))==-1)
 	{
 			printf("send error!");								//send the ack
 			exit(1);
 	}
-	if ((fp = fopen ("myTCPreceive.txt","wt")) == NULL)
+	if ((fp = fopen ("myUDPreceive.txt","wt")) == NULL)
 	{
 		printf("File doesn't exit\n");
 		exit(0);
