@@ -64,7 +64,6 @@ void str_ser1(int sockfd)
 	ack.len = 0;
 	ack.num = 1;
 //	memcpy(buf, recvs.data, recvs.len);
-	send(sockfd, &ack, 2, 0);                                                  //send ACK or NACK
 
 	if((fp = fopen ("myUDPreceive.txt","wt")) == NULL) {
 		printf("File doesn't exit\n");
