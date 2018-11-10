@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 		printf("error in binding");
 		exit(1);
 	}
+
 	printf("start receiving\n");
 	while(1) {
 		str_ser1(sockfd);                        // send and receive
@@ -33,16 +34,46 @@ int main(int argc, char *argv[])
 
 void str_ser1(int sockfd)
 {
-	char recvs[MAXSIZE];
-	int n = 0, len;
+	char buf[BUFSIZE];
+	FILE *fp;
+	struct pack_so recvs;
+	struct ack_so ack;
+	int end, n = 0, ci, lsize=1, len;
+	ci = end = ack.num = 0;
 	struct sockaddr_in addr;
 
 	len = sizeof (struct sockaddr_in);
 
-	if ((n=recvfrom(sockfd, &recvs, MAXSIZE, 0, (struct sockaddr *)&addr, &len)) == -1) {      //receive the packet
-		printf("error receiving");
-		exit(1);
+	while(ci < lsize) {
+		if ((n=recvfrom(sockfd, &recvs, MAXSIZE, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
+		{
+			printf("receiving error!\n");
+			return;
+		}
+		else printf("%d data received\n", n);
+		if (ci == 0) {
+			lsize = recvs.len;								//copy the data length
+			memcpy(buf, recvs.data, (n-HEADLEN));			//copy the data
+			ci += n-HEADLEN;
+		}
+		else {
+			memcpy((buf+ci), &recvs, n);
+			ci += n;
+		}
 	}
-	recvs[n] = '\0';
-	printf("the received string is :\n%s", recvs);
+	ack.len = 0;
+	ack.num = 1;
+//	memcpy(buf, recvs.data, recvs.len);
+	send(sockfd, &ack, 2, 0);                                                  //send ACK or NACK
+
+	if((fp = fopen ("myUDPreceive.txt","wt")) == NULL) {
+		printf("File doesn't exit\n");
+		exit(0);
+	}
+	printf("the data received: %d\n", ci);
+	printf("the file size received: %d\n", lsize);
+	fwrite (buf , 1 , lsize, fp);								//write the data into file
+	fclose(fp);
+	printf("a file has been successfully received!\n");
+
 }
