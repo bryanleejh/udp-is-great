@@ -98,6 +98,6 @@ void str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *len
 		printf("Oh dear, something went wrong with read()! %s\n", strerror(errno));
 		printf("Oh dear, something went wrong with read()! %d\n", errno);
 		exit(1);
-	}a
+	}
 	else printf("%d data sent", n);
 }
