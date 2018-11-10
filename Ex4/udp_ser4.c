@@ -7,7 +7,7 @@ tcp_ser.c: the source file of the server in tcp transmission
 
 #define BACKLOG 10
 
-void str_ser(int sockfd, struct sockaddr *addr, int addrlen);                                                        // transmitting and receiving function
+void str_ser(int sockfd);                                                        // transmitting and receiving function
 
 int main(void)
 {
@@ -42,20 +42,13 @@ int main(void)
 		// printf("waiting for data\n");
 		sin_size = sizeof (struct sockaddr_in);
 
-		if ((pid = fork())==0)                                         // creat acception process
-		{
-			close(sockfd);
-			str_ser(con_fd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr_in));                                          //receive packet and response
-			close(con_fd);
-			exit(0);
-		}
-		else close(con_fd);                                         //parent process
+		str_ser(sockfd);
 	}
 	close(sockfd);
 	exit(0);
 }
 
-void str_ser(int sockfd, struct sockaddr *addr, int addrlen)
+void str_ser(int sockfd)
 {
 	char buf[BUFSIZE];
 	FILE *fp;
@@ -65,6 +58,8 @@ void str_ser(int sockfd, struct sockaddr *addr, int addrlen)
 	long lseek=0;
 	end = 0;
 
+	struct sockaddr_in addr;
+
 	len = sizeof (struct sockaddr_in);
 
 	printf("receiving data!\n");
@@ -73,6 +68,9 @@ void str_ser(int sockfd, struct sockaddr *addr, int addrlen)
 	{
 		if ((n= recvfrom(sockfd, &recvs, DATALEN, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
+			printf("%d", sockfd);
+			printf("Oh dear, something went wrong with read()! %s\n", strerror(errno));
+
 			printf("error when receiving\n");
 			exit(1);
 		}
@@ -84,13 +82,7 @@ void str_ser(int sockfd, struct sockaddr *addr, int addrlen)
 		memcpy((buf+lseek), recvs, n);
 		lseek += n;
 	}
-	ack.num = 1;
-	ack.len = 0;
-	if ((n = sendto(sockfd, &ack, 2, 0, addr, addrlen))==-1)
-	{
-			printf("send error!");								//send the ack
-			exit(1);
-	}
+
 	if ((fp = fopen ("myUDPreceive.txt","wt")) == NULL)
 	{
 		printf("File doesn't exit\n");

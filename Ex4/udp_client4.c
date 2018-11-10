@@ -52,12 +52,7 @@ int main(int argc, char **argv)
 	ser_addr.sin_port = htons(MYUDP_PORT);
 	memcpy(&(ser_addr.sin_addr.s_addr), *addrs, sizeof(struct in_addr));
 	bzero(&(ser_addr.sin_zero), 8);
-	ret = connect(sockfd, (struct sockaddr *)&ser_addr, sizeof(struct sockaddr));         //connect the socket with the host
-	if (ret != 0) {
-		printf ("connection failed\n");
-		close(sockfd);
-		exit(1);
-	}
+
 
 	if((fp = fopen ("myfile.txt","r+t")) == NULL)
 	{
@@ -112,17 +107,12 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 		n = sendto(sockfd, &sends, slen, 0, addr, addrlen);
 		if(n == -1) {
 			printf("send error!");								//send the data
+			printf("Oh dear, something went wrong with read()! %s\n", strerror(errno));
 			exit(1);
 		}
 		ci += slen;
 	}
-	if ((n= recvfrom(sockfd, &ack, 2, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the ack
-	{
-		printf("error when receiving\n");
-		exit(1);
-	}
-	if (ack.num != 1|| ack.len != 0)
-		printf("error in transmission\n");
+
 	gettimeofday(&recvt, NULL);
 	*len= ci;                                                         //get current time
 	tv_sub(&recvt, &sendt);                                           // get the whole trans time
