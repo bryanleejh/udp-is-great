@@ -69,7 +69,7 @@ void str_ser(int sockfd)
 		if ((n= recvfrom(sockfd, &recvs, DATALEN, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
 			printf("%d", sockfd);
-			printf("Oh dear, something went wrong with read()! %s\n", strerror(errno));
+			printf("Oh dear, something went wrong with recvfrom()! %s\n", strerror(errno));
 
 			printf("error when receiving\n");
 			exit(1);
@@ -88,7 +88,7 @@ void str_ser(int sockfd)
 	{
 			printf("send error!");								//send the ack
 			printf("%d", n);
-			printf("Oh dear, something went wrong with read()! %s\n", strerror(errno));
+			printf("Oh dear, something went wrong with sendto()! %s\n", strerror(errno));
 			exit(1);
 	}
 	if ((fp = fopen ("myUDPreceive.txt","wt")) == NULL)
