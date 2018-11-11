@@ -125,6 +125,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 			printf("there \n");
 		}
 		memcpy(sends.data, (buf+ci), sends.len-HEADLEN);
+		// printf("%s\n", sends.data);
 		printf("copy done\n");
 		if (ci != 0)	{ // if not first packet wait for ack
 			if ((recvfrom(sockfd, &ack, 2, 0, (struct sockaddr *)&addr1, &addr1len)) == -1)//(n= recv(sockfd, &ack, 2, 0))==-1)                                   //receive the ack

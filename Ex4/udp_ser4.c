@@ -67,7 +67,7 @@ void str_ser(int sockfd)
 
 	while(!end)
 	{
-		if ((n= recvfrom(sockfd, &recvs, DATALEN, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
+		if ((n= recvfrom(sockfd, &recvs, DATALEN+HEADLEN, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
 			printf("error when receiving\n");
 			exit(1);
