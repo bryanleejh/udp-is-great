@@ -52,11 +52,13 @@ void str_ser(int sockfd)
 {
 	char buf[BUFSIZE];
 	FILE *fp;
-	char recvs[DATALEN];
+	// char recvs[DATALEN];
+	struct pack_so recvs;
 	struct ack_so ack;
-	int end, n = 0, len;
+	int end = 0, n = 0, len;
 	long lseek=0;
-	end = 0;
+	// int end, n = 0, ci, lsize=1;
+	// ci = end = ack.num = 0;
 
 	struct sockaddr_in addr;
 
@@ -68,29 +70,37 @@ void str_ser(int sockfd)
 	{
 		if ((n= recvfrom(sockfd, &recvs, DATALEN, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
-			printf("%d", sockfd);
-			printf("Oh dear, something went wrong with recvfrom()! %s\n", strerror(errno));
-
 			printf("error when receiving\n");
 			exit(1);
+		} else {
+			printf("receiving\n");
+			ack.num = 1;
+			ack.len = 0;
+			printf("ack\n");
+			if ((n = sendto(sockfd, &ack, sizeof(ack), 0, (struct sockaddr *)&addr, len))==-1)
+			{
+					printf("send error!\n");								//send the ack
+					printf("%d\n", n);
+					printf("Oh dear, something went wrong with sendto()! %s\n", strerror(errno));
+					exit(1);
+			} else {
+				printf("ack sent on ser side\n");
+			}
 		}
-		if (recvs[n-1] == '\0')									//if it is the end of the file
+
+		if (recvs.data[n-1] == '\0')									//if it is the end of the file
 		{
 			end = 1;
 			n --;
 		}
-		memcpy((buf+lseek), recvs, n);
+
+		memcpy((buf+lseek), &recvs, n);
 		lseek += n;
+		printf("lseek %d\n", lseek);
+		printf("n %d\n", n);
+		printf("end %d\n", end);
 	}
-	ack.num = 1;
-	ack.len = 0;
-	if ((n = sendto(sockfd, &ack, 2, 0, (struct sockaddr *)&addr, &len))==-1)
-	{
-			printf("send error!");								//send the ack
-			printf("%d", n);
-			printf("Oh dear, something went wrong with sendto()! %s\n", strerror(errno));
-			exit(1);
-	}
+
 	if ((fp = fopen ("myUDPreceive.txt","wt")) == NULL)
 	{
 		printf("File doesn't exit\n");
