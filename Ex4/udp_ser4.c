@@ -61,7 +61,6 @@ void str_ser(int sockfd)
 	// ci = end = ack.num = 0;
 
 	struct sockaddr_in addr;
-
 	len = sizeof (struct sockaddr_in);
 
 	printf("receiving data!\n");
@@ -72,36 +71,36 @@ void str_ser(int sockfd)
 		{
 			printf("error when receiving\n");
 			exit(1);
-		} else {
-			printf("receiving\n");
-			ack.num = 1;
-			ack.len = 0;
-			printf("ack\n");
-			if ((n = sendto(sockfd, &ack, sizeof(ack), 0, (struct sockaddr *)&addr, len))==-1)
-			{
-					printf("send error!\n");								//send the ack
-					printf("%d\n", n);
-					printf("Oh dear, something went wrong with sendto()! %s\n", strerror(errno));
-					exit(1);
-			} else {
-				printf("ack sent on ser side\n");
-			}
 		}
 
 		if (recvs.data[n-1] == '\0')									//if it is the end of the file
 		{
 			end = 1;
 			n --;
+			printf("end of file %d\n", n);
 		}
 
-		memcpy((buf+lseek), &recvs, n);
-		lseek += n;
+		printf("receiving\n");
+		memcpy((buf+lseek), recvs.data, recvs.len-HEADLEN);
+		lseek += recvs.len-HEADLEN;
+
 		printf("lseek %d\n", lseek);
 		printf("n %d\n", n);
 		printf("end %d\n", end);
+		ack.num = 1;
+		ack.len = 0;
+		printf("ack\n");
+		if ((n = sendto(sockfd, &ack, sizeof(ack), 0, (struct sockaddr *)&addr, len))==-1)
+		{
+				printf("send error!\n");								//send the ack
+				exit(1);
+		} else {
+			printf("ack sent on ser side\n");
+		}
+
 	}
 
-	if ((fp = fopen ("myUDPreceive.txt","wt")) == NULL)
+	if ((fp = fopen ("myUDPreceive.txt","at")) == NULL)
 	{
 		printf("File doesn't exit\n");
 		exit(0);

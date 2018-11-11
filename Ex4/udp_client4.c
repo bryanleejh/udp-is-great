@@ -115,9 +115,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 			isDouble = 0;
 			// printf("2 DU %d\n", x);
 		}
-		// printf("lsize %d \n", lsize);
-		// printf("ci %d \n", ci);
-		// printf("x %d \n", x);
+
 		if ((lsize+1-ci) <= x) {
 			sends.len = lsize+1-ci+HEADLEN; //for the last packet
 			printf("here \n");
@@ -126,7 +124,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 			sends.len = x+HEADLEN;
 			printf("there \n");
 		}
-		// printf("%d", sends.len-HEADLEN);
+		memcpy(sends.data, (buf+ci), sends.len-HEADLEN);
 		printf("copy done\n");
 		if (ci != 0)	{ // if not first packet wait for ack
 			if ((recvfrom(sockfd, &ack, 2, 0, (struct sockaddr *)&addr1, &addr1len)) == -1)//(n= recv(sockfd, &ack, 2, 0))==-1)                                   //receive the ack
@@ -139,7 +137,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 				n = sendto(sockfd, &sends, sends.len, 0, addr, addrlen);
 			}
 		}
-		else { // else send first
+		else {
 			n = sendto(sockfd, &sends, sends.len, 0, addr, addrlen);//send(sockfd, &sends, slen, 0); in one packet
 		}
 
