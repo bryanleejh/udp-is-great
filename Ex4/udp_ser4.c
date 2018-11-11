@@ -39,7 +39,7 @@ int main(void)
 
 	while (1)
 	{
-		// printf("waiting for data\n");
+		printf("waiting for data\n");
 		sin_size = sizeof (struct sockaddr_in);
 
 		str_ser(sockfd);
@@ -82,7 +82,15 @@ void str_ser(int sockfd)
 		memcpy((buf+lseek), recvs, n);
 		lseek += n;
 	}
-
+	ack.num = 1;
+	ack.len = 0;
+	if ((n = sendto(sockfd, &ack, 2, 0, (struct sockaddr *)&addr, &len))==-1)
+	{
+			printf("send error!");								//send the ack
+			printf("%d", n);
+			printf("Oh dear, something went wrong with read()! %s\n", strerror(errno));
+			exit(1);
+	}
 	if ((fp = fopen ("myUDPreceive.txt","wt")) == NULL)
 	{
 		printf("File doesn't exit\n");
