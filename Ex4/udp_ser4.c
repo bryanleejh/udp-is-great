@@ -7,7 +7,7 @@ tcp_ser.c: the source file of the server in tcp transmission
 
 #define BACKLOG 10
 
-void str_ser(int sockfd);                                                        // transmitting and receiving function
+void str_ser(int sockfd); // transmitting and receiving function
 
 int main(void)
 {
@@ -19,7 +19,7 @@ int main(void)
 //	char *buf;
 	pid_t pid;
 
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);          //create socket
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0); //create socket
 	if (sockfd <0)
 	{
 		printf("error in socket!");
@@ -28,9 +28,9 @@ int main(void)
 
 	my_addr.sin_family = AF_INET;
 	my_addr.sin_port = htons(MYUDP_PORT);
-	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);//inet_addr("172.0.0.1");
+	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	bzero(&(my_addr.sin_zero), 8);
-	ret = bind(sockfd, (struct sockaddr *) &my_addr, sizeof(struct sockaddr));                //bind socket
+	ret = bind(sockfd, (struct sockaddr *) &my_addr, sizeof(struct sockaddr)); //bind socket
 	if (ret <0)
 	{
 		printf("error in binding");
@@ -68,7 +68,7 @@ void str_ser(int sockfd)
 		}
 		printf("Received packet size of %d bytes\n", n);
 
-		if (recvs[n-1] == '\0')									//if it is the end of the file
+		if (recvs[n-1] == '\0')	//if it is the end of the file
 		{
 			end = 1;
 			n --;
@@ -88,7 +88,7 @@ void str_ser(int sockfd)
 			}
 			printf("Received packet size of %d bytes\n", n);
 
-			if (recvs[n-1] == '\0')									//if it is the end of the file
+			if (recvs[n-1] == '\0')	//if it is the end of the file
 			{
 				end = 1;
 				n --;
@@ -104,7 +104,7 @@ void str_ser(int sockfd)
 		printf("ack\n");
 		if ((n = sendto(sockfd, &ack, 2, 0, (struct sockaddr *)&addr, len))==-1)
 		{
-				printf("error when sending ack\n");								//send the ack
+				printf("error when sending ack\n");	//send the ack
 				exit(1);
 		} else {
 			printf("ack sent on ser side\n");
@@ -122,7 +122,7 @@ void str_ser(int sockfd)
 		printf("File doesn't exit\n");
 		exit(0);
 	}
-	fwrite (buf , 1 , lseek , fp);					//write data into file
+	fwrite (buf , 1 , lseek , fp); //write data into file
 	fclose(fp);
 	printf("a file has been successfully received!\nthe total data received is %d bytes\n", (int)lseek);
 }

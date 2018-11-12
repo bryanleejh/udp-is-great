@@ -4,8 +4,8 @@ tcp_client.c: the source file of the client in tcp transmission
 
 #include "headsock.h"
 
-float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *len);                       //transmission function
-void tv_sub(struct  timeval *out, struct timeval *in);	    //calcu the time interval between out and in
+float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *len); //transmission function
+void tv_sub(struct  timeval *out, struct timeval *in); //calcu the time interval between out and in
 
 int main(int argc, char **argv)
 {
@@ -22,13 +22,13 @@ int main(int argc, char **argv)
 		printf("parameters not match");
 	}
 
-	sh = gethostbyname(argv[1]);	                                       //get host's information
+	sh = gethostbyname(argv[1]); //get host's information
 	if (sh == NULL) {
 		printf("error when gethostby name");
 		exit(0);
 	}
 
-	printf("canonical name: %s\n", sh->h_name);					//print the remote host's information
+	printf("canonical name: %s\n", sh->h_name); //print the remote host's information
 	for (pptr=sh->h_aliases; *pptr != NULL; pptr++)
 		printf("the aliases name is: %s\n", *pptr);
 	switch(sh->h_addrtype)
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	}
 
 	addrs = (struct in_addr **)sh->h_addr_list;
-	sockfd = socket(AF_INET, SOCK_DGRAM, 0);                           //create the socket
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0); //create the socket
 	if (sockfd <0)
 	{
 		printf("error in socket");
@@ -59,8 +59,8 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	ti = str_cli(fp, sockfd, (struct sockaddr *)&ser_addr, sizeof(struct sockaddr_in), &len);                       //perform the transmission and receiving
-	rt = (len/(float)ti);                                         //caculate the average transmission rate
+	ti = str_cli(fp, sockfd, (struct sockaddr *)&ser_addr, sizeof(struct sockaddr_in), &len); //perform the transmission and receiving
+	rt = (len/(float)ti); //caculate the average transmission rate
 	printf("Time(ms) : %.3f, Data sent(byte): %d\nData rate: %f (Kbytes/s)\n", ti, (int)len, rt);
 
 	close(sockfd);
@@ -90,7 +90,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 	printf("The file length is %d bytes\n", (int)lsize);
 	printf("the packet length is %d bytes\n", DATALEN+HEADLEN);
 
-// allocate memory to contain the whole file.
+	// allocate memory to contain the whole file.
 	buf = (char *) malloc (lsize);
 	if (buf == NULL) exit (2);
 
@@ -98,17 +98,11 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 	fread (buf,1,lsize,fp);
 
   /*** the whole file is loaded in the buffer. ***/
-	buf[lsize] ='\0';									//append the end byte
-	gettimeofday(&sendt, NULL);							//get the current time
+	buf[lsize] ='\0';	//append the end byte
+	gettimeofday(&sendt, NULL);	//get the current time
 
 	while(ci <= lsize) // while index less than file length keep sending
 	{
-		// if (isDouble == 0) {
-		// 	slen = DATALEN;
-		//
-		// } else {
-		// 	slen = 2 * DATALEN;
-		// }
 
 		if (ci != 0)	{ // if not first packet wait for ack
 			if ((recvfrom(sockfd, &ack, 2, 0, (struct sockaddr *)&addr1, &addr1len)) == -1)//(n= recv(sockfd, &ack, 2, 0))==-1)                                   //receive the ack
@@ -130,7 +124,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 					printf("copy done\n");
 					n = sendto(sockfd, &sends, slen, 0, addr, addrlen);
 					if(n == -1) {
-						printf("send error!");		//send the data
+						printf("send error!");
 						exit(1);
 					}
 					else printf("%d data sent\n", n);
@@ -149,7 +143,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 					printf("copy done\n");
 					n = sendto(sockfd, &sends, slen, 0, addr, addrlen);
 					if(n == -1) {
-						printf("send error!");		//send the data
+						printf("send error!");
 						exit(1);
 					}
 					else printf("%d data sent\n", n);
@@ -165,7 +159,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 					printf("copy done\n");
 					n = sendto(sockfd, &sends, slen, 0, addr, addrlen);
 					if(n == -1) {
-						printf("send error!");		//send the data
+						printf("send error!"); //send the data
 						exit(1);
 					}
 					else printf("%d data sent\n", n);
@@ -185,9 +179,9 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 			}
 			memcpy(sends, (buf+ci), slen);
 			printf("copy done\n");
-			n = sendto(sockfd, &sends, slen, 0, addr, addrlen);//send(sockfd, &sends, slen, 0); in one packet
+			n = sendto(sockfd, &sends, slen, 0, addr, addrlen); //send(sockfd, &sends, slen, 0); in one packet
 			if(n == -1) {
-				printf("send error!");		//send the data
+				printf("send error!"); //send the data
 				exit(1);
 			}
 			else printf("%d data sent\n", n);
