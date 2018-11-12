@@ -54,13 +54,14 @@ void str_ser(int sockfd)
 	long lseek=0;
 	struct sockaddr_in addr;
 	len = sizeof (struct sockaddr_in);
+	int datalen = DATALEN;
 
 	ack.num = 1;
 	ack.len = 0;
 
 	while(!end){
-		printf("Expecting packet size of %d bytes\n", DATALEN * ack.num);
-		if ((n= recvfrom(sockfd, &recvs, DATALEN * ack.num, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
+		printf("Expecting packet size of %d bytes\n", datalen * ack.num);
+		if ((n = recvfrom(sockfd, &recvs, (datalen * ack.num), 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
 			printf("error when receiving\n");
 			exit(1);

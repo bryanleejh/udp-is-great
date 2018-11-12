@@ -156,6 +156,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 			}
 			else printf("%d data sent\n", n);
 			ci += slen;
+			isDouble = 1;
 		}
 
 	}
