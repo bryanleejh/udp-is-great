@@ -60,8 +60,8 @@ void str_ser(int sockfd)
 	ack.len = 0;
 
 	while(!end){
-		printf("Expecting packet size of %d bytes\n", datalen * ack.num);
-		if ((n = recvfrom(sockfd, &recvs, (datalen * ack.num), 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
+		printf("Expecting %d packet size of %d bytes\n", ack.num, datalen);
+		if ((n = recvfrom(sockfd, &recvs, (datalen), 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
 			printf("error when receiving\n");
 			exit(1);
@@ -79,6 +79,27 @@ void str_ser(int sockfd)
 		lseek += n;
 
 		printf("bytes received so far %d\n", lseek);
+
+		if (ack.num == 2) {
+			if ((n = recvfrom(sockfd, &recvs, (datalen), 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
+			{
+				printf("error when receiving\n");
+				exit(1);
+			}
+			printf("Received packet size of %d bytes\n", n);
+
+			if (recvs[n-1] == '\0')									//if it is the end of the file
+			{
+				end = 1;
+				n --;
+				printf("end of file %d\n", n);
+			}
+
+			memcpy((buf+lseek), recvs, n);
+			lseek += n;
+
+			printf("bytes received so far %d\n", lseek);
+		}
 
 		printf("ack\n");
 		if ((n = sendto(sockfd, &ack, 2, 0, (struct sockaddr *)&addr, len))==-1)

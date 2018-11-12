@@ -77,7 +77,7 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 	char sends2[DATALEN*2];
 	// struct pack_so sends;
 	struct ack_so ack;
-	int n, slen = 0, isDouble = 0;
+	int n, slen = DATALEN, isDouble = 0;
 	float time_inv = 0.0;
 	struct timeval sendt, recvt;
 	int addr1len;
@@ -103,19 +103,12 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 
 	while(ci <= lsize) // while index less than file length keep sending
 	{
-		if (isDouble == 0) {
-			slen = DATALEN;
-
-		} else {
-			slen = 2 * DATALEN;
-		}
- 		if ((lsize+1-ci) <= slen) {
-			slen = lsize+1-ci; //for the last packet
-			printf("here %d\n", slen);
-		}
-		else {
-			printf("there %d\n", slen);
-		}
+		// if (isDouble == 0) {
+		// 	slen = DATALEN;
+		//
+		// } else {
+		// 	slen = 2 * DATALEN;
+		// }
 
 		if (ci != 0)	{ // if not first packet wait for ack
 			if ((recvfrom(sockfd, &ack, 2, 0, (struct sockaddr *)&addr1, &addr1len)) == -1)//(n= recv(sockfd, &ack, 2, 0))==-1)                                   //receive the ack
@@ -126,27 +119,70 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 			else {
 				printf("Received ACK\n");
 				if (isDouble == 0) {
+					if ((lsize+1-ci) <= slen) {
+						slen = lsize+1-ci; //for the last packet
+						printf("here %d\n", slen);
+					}
+					else {
+						printf("there %d\n", slen);
+					}
 					memcpy(sends, (buf+ci), slen);
 					printf("copy done\n");
 					n = sendto(sockfd, &sends, slen, 0, addr, addrlen);
+					if(n == -1) {
+						printf("send error!");		//send the data
+						exit(1);
+					}
+					else printf("%d data sent\n", n);
+					ci += slen;
 					isDouble = 1;
-				} else {
-					memcpy(sends2, (buf+ci), slen);
+				}
+				else {
+					if ((lsize+1-ci) <= slen) {
+						slen = lsize+1-ci; //for the last packet
+						printf("here %d\n", slen);
+					}
+					else {
+						printf("there %d\n", slen);
+					}
+					memcpy(sends, (buf+ci), slen);
 					printf("copy done\n");
-					n = sendto(sockfd, &sends2, slen, 0, addr, addrlen);
+					n = sendto(sockfd, &sends, slen, 0, addr, addrlen);
+					if(n == -1) {
+						printf("send error!");		//send the data
+						exit(1);
+					}
+					else printf("%d data sent\n", n);
+					ci += slen;
+					if ((lsize+1-ci) <= slen) {
+						slen = lsize+1-ci; //for the last packet
+						printf("here %d\n", slen);
+					}
+					else {
+						printf("there %d\n", slen);
+					}
+					memcpy(sends, (buf+ci), slen);
+					printf("copy done\n");
+					n = sendto(sockfd, &sends, slen, 0, addr, addrlen);
+					if(n == -1) {
+						printf("send error!");		//send the data
+						exit(1);
+					}
+					else printf("%d data sent\n", n);
+					ci += slen;
 					isDouble = 0;
 				}
-
-				if(n == -1) {
-					printf("send error!");		//send the data
-					exit(1);
-				}
-				else printf("%d data sent\n", n);
-				ci += slen;
 
 			}
 		}
 		else { // first packet so don't wait for ACK
+			if ((lsize+1-ci) <= slen) {
+				slen = lsize+1-ci; //for the last packet
+				printf("here %d\n", slen);
+			}
+			else {
+				printf("there %d\n", slen);
+			}
 			memcpy(sends, (buf+ci), slen);
 			printf("copy done\n");
 			n = sendto(sockfd, &sends, slen, 0, addr, addrlen);//send(sockfd, &sends, slen, 0); in one packet
