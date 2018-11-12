@@ -60,13 +60,13 @@ void str_ser(int sockfd)
 	ack.len = 0;
 
 	while(!end){
-		printf("Expecting %d packet size of %d bytes\n", ack.num, datalen);
+		printf("expecting %d packet size of %d bytes\n", ack.num, datalen);
 		if ((n = recvfrom(sockfd, &recvs, (datalen), 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
 			printf("error when receiving\n");
 			exit(1);
 		}
-		printf("Received packet size of %d bytes\n", n);
+		printf("received packet size of %d bytes\n", n);
 
 		if (recvs[n-1] == '\0')	//if it is the end of the file
 		{
@@ -86,7 +86,7 @@ void str_ser(int sockfd)
 				printf("error when receiving\n");
 				exit(1);
 			}
-			printf("Received packet size of %d bytes\n", n);
+			printf("received packet size of %d bytes\n", n);
 
 			if (recvs[n-1] == '\0')	//if it is the end of the file
 			{
@@ -119,7 +119,7 @@ void str_ser(int sockfd)
 
 	if ((fp = fopen ("myUDPreceive.txt","wt")) == NULL)
 	{
-		printf("File doesn't exit\n");
+		printf("file doesn't exit\n");
 		exit(0);
 	}
 	fwrite (buf , 1 , lseek , fp); //write data into file
