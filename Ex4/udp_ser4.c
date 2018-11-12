@@ -37,13 +37,8 @@ int main(void)
 		exit(1);
 	}
 
-	while (1)
-	{
-		printf("waiting for data\n");
-		sin_size = sizeof (struct sockaddr_in);
-
-		str_ser(sockfd);
-	}
+	printf("start receiving\n");
+	str_ser(sockfd);
 	close(sockfd);
 	exit(0);
 }
@@ -52,55 +47,55 @@ void str_ser(int sockfd)
 {
 	char buf[BUFSIZE];
 	FILE *fp;
-	// char recvs[DATALEN];
-	struct pack_so recvs;
+	char recvs[BUFSIZE];
+	// struct pack_so recvs;
 	struct ack_so ack;
 	int end = 0, n = 0, len;
 	long lseek=0;
-	// int end, n = 0, ci, lsize=1;
-	// ci = end = ack.num = 0;
-
 	struct sockaddr_in addr;
 	len = sizeof (struct sockaddr_in);
 
-	printf("receiving data!\n");
+	ack.num = 1;
+	ack.len = 0;
 
-	while(!end)
-	{
-		if ((n= recvfrom(sockfd, &recvs, DATALEN+HEADLEN, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
+	while(!end){
+		printf("Expecting packet size of %d bytes\n", DATALEN * ack.num);
+		if ((n= recvfrom(sockfd, &recvs, DATALEN * ack.num, 0, (struct sockaddr *)&addr, &len))==-1)                                   //receive the packet
 		{
 			printf("error when receiving\n");
 			exit(1);
 		}
+		printf("Received packet size of %d bytes\n", n);
 
-		if (recvs.data[n-1] == '\0')									//if it is the end of the file
+		if (recvs[n-1] == '\0')									//if it is the end of the file
 		{
 			end = 1;
 			n --;
 			printf("end of file %d\n", n);
 		}
 
-		printf("receiving\n");
-		memcpy((buf+lseek), recvs.data, recvs.len-HEADLEN);
-		lseek += recvs.len-HEADLEN;
+		memcpy((buf+lseek), recvs, n);
+		lseek += n;
 
-		printf("lseek %d\n", lseek);
-		printf("n %d\n", n);
-		printf("end %d\n", end);
-		ack.num = 1;
-		ack.len = 0;
+		printf("bytes received so far %d\n", lseek);
+
 		printf("ack\n");
-		if ((n = sendto(sockfd, &ack, sizeof(ack), 0, (struct sockaddr *)&addr, len))==-1)
+		if ((n = sendto(sockfd, &ack, 2, 0, (struct sockaddr *)&addr, len))==-1)
 		{
-				printf("send error!\n");								//send the ack
+				printf("error when sending ack\n");								//send the ack
 				exit(1);
 		} else {
 			printf("ack sent on ser side\n");
 		}
 
+		if (ack.num == 1)
+			ack.num = 2;
+		else
+			ack.num = 1;
+
 	}
 
-	if ((fp = fopen ("myUDPreceive.txt","at")) == NULL)
+	if ((fp = fopen ("myUDPreceive.txt","wt")) == NULL)
 	{
 		printf("File doesn't exit\n");
 		exit(0);

@@ -73,23 +73,22 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 {
 	char *buf;
 	long lsize, ci;
-	// char sends[DATALEN];
-	struct pack_so sends;
+	char sends[DATALEN];
+	char sends2[DATALEN*2];
+	// struct pack_so sends;
 	struct ack_so ack;
-	int n, isDouble = 0; //slen;
+	int n, slen = 0, isDouble = 0;
 	float time_inv = 0.0;
 	struct timeval sendt, recvt;
 	int addr1len;
 	struct sockaddr_in addr1;
 	ci = 0;
-	int x = DATALEN;
 
 	fseek (fp , 0 , SEEK_END);
 	*len = lsize = ftell (fp);
-	printf("the lsize length is %ld bytes\n",lsize);
 	rewind (fp);
 	printf("The file length is %d bytes\n", (int)lsize);
-	printf("the packet length is %d bytes\n", x+HEADLEN);
+	printf("the packet length is %d bytes\n", DATALEN+HEADLEN);
 
 // allocate memory to contain the whole file.
 	buf = (char *) malloc (lsize);
@@ -102,31 +101,22 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 	buf[lsize] ='\0';									//append the end byte
 	gettimeofday(&sendt, NULL);							//get the current time
 
-	sends.num = 0;
 	while(ci <= lsize) // while index less than file length keep sending
 	{
-		if (isDouble ==0){ // set 1 or 2 DU
-			x = DATALEN;
-			isDouble = 1;
-			// printf("1 DU %d\n", x);
+		if (isDouble == 0) {
+			slen = DATALEN;
+
+		} else {
+			slen = 2 * DATALEN;
+		}
+ 		if ((lsize+1-ci) <= slen) {
+			slen = lsize+1-ci; //for the last packet
+			printf("here %d\n", slen);
 		}
 		else {
-			x = 2*DATALEN;
-			isDouble = 0;
-			// printf("2 DU %d\n", x);
+			printf("there %d\n", slen);
 		}
 
-		if ((lsize+1-ci) <= x) {
-			sends.len = lsize+1-ci+HEADLEN; //for the last packet
-			printf("here \n");
-		}
-		else {
-			sends.len = x+HEADLEN;
-			printf("there \n");
-		}
-		memcpy(sends.data, (buf+ci), sends.len-HEADLEN);
-		// printf("%s\n", sends.data);
-		printf("copy done\n");
 		if (ci != 0)	{ // if not first packet wait for ack
 			if ((recvfrom(sockfd, &ack, 2, 0, (struct sockaddr *)&addr1, &addr1len)) == -1)//(n= recv(sockfd, &ack, 2, 0))==-1)                                   //receive the ack
 			{
@@ -135,20 +125,39 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *le
 			}
 			else {
 				printf("Received ACK\n");
-				n = sendto(sockfd, &sends, sends.len, 0, addr, addrlen);
+				if (isDouble == 0) {
+					memcpy(sends, (buf+ci), slen);
+					printf("copy done\n");
+					n = sendto(sockfd, &sends, slen, 0, addr, addrlen);
+					isDouble = 1;
+				} else {
+					memcpy(sends2, (buf+ci), slen);
+					printf("copy done\n");
+					n = sendto(sockfd, &sends2, slen, 0, addr, addrlen);
+					isDouble = 0;
+				}
+
+				if(n == -1) {
+					printf("send error!");		//send the data
+					exit(1);
+				}
+				else printf("%d data sent\n", n);
+				ci += slen;
+
 			}
 		}
-		else {
-			n = sendto(sockfd, &sends, sends.len, 0, addr, addrlen);//send(sockfd, &sends, slen, 0); in one packet
+		else { // first packet so don't wait for ACK
+			memcpy(sends, (buf+ci), slen);
+			printf("copy done\n");
+			n = sendto(sockfd, &sends, slen, 0, addr, addrlen);//send(sockfd, &sends, slen, 0); in one packet
+			if(n == -1) {
+				printf("send error!");		//send the data
+				exit(1);
+			}
+			else printf("%d data sent\n", n);
+			ci += slen;
 		}
 
-		//check if packet is sent
-		if(n == -1) {
-			printf("send error!");		//send the data
-			exit(1);
-		}
-		else printf("%d data sent\n", n);
-		ci += sends.len-HEADLEN;
 	}
 
 	gettimeofday(&recvt, NULL);

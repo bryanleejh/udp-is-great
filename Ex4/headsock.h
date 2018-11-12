@@ -25,7 +25,7 @@ struct pack_so			//data packet structure
 {
 uint32_t num;				// the sequence number
 uint32_t len;					// the packet length
-char data[2*DATALEN];	//the packet data
+char data[DATALEN];	//the packet data
 };
 
 struct ack_so
